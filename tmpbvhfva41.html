@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>WCL 战斗对比 - 加拉克苏斯大王</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --bg-card: #16213e;
+            --bg-table: #0f3460;
+            --text: #e94560;
+            --text-light: #f0f0f0;
+            --positive: #4ade80;
+            --negative: #f87171;
+            --neutral: #94a3b8;
+            --border: #2d3748;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text-light);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: var(--text); text-align: center; margin-bottom: 10px; }
+        h2 { color: var(--text); border-bottom: 2px solid var(--text); padding-bottom: 8px; margin-top: 30px; }
+        h3 { color: #ffd700; margin-top: 25px; }
+        
+        .fight-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .fight-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid var(--border);
+        }
+        .fight-card.a { border-left: 4px solid #60a5fa; }
+        .fight-card.b { border-left: 4px solid var(--text); }
+        .fight-card label { color: var(--neutral); font-size: 0.85em; }
+        .fight-card .value { font-size: 1.2em; font-weight: bold; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th {
+            background: var(--bg-table);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #ffd700;
+        }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        tr:hover { background: rgba(233, 69, 96, 0.05); }
+        
+        .positive { color: var(--positive); font-weight: bold; }
+        .negative { color: var(--negative); font-weight: bold; }
+        .neutral { color: var(--neutral); }
+        
+        /* 伤害表格样式 */
+        .damage-table td, .damage-table th { padding: 6px 10px; font-size: 0.9em; }
+        .damage-table .diff-row td { border-bottom: none; padding-bottom: 2px; background: rgba(15, 52, 96, 0.4); font-weight: 600; }
+        .damage-table .row-a td { border-bottom: 1px dashed var(--border); padding-top: 2px; padding-bottom: 2px; background: rgba(0, 0, 0, 0.1); }
+        .damage-table .row-b td { border-bottom: 2px solid var(--border); padding-top: 2px; padding-bottom: 6px; background: rgba(0, 0, 0, 0.2); }
+        .damage-table td:first-child { min-width: 100px; }
+        
+        .player-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+        }
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .dps-badge {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .dps-delta { font-size: 0.8em; margin-left: 10px; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stats-box {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .stats-box h4 { margin-top: 0; color: #60a5fa; }
+        
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+        .tag.kill { background: rgba(74, 222, 128, 0.2); color: var(--positive); }
+        .tag.wipe { background: rgba(248, 113, 113, 0.2); color: var(--negative); }
+        
+        .footer {
+            text-align: center;
+            color: var(--neutral);
+            margin-top: 40px;
+            padding: 20px;
+            font-size: 0.85em;
+        }
+        
+        /* 增益/减益时间轴 */
+        .aura-section { margin-top: 15px; }
+        .aura-toggle {
+            width: 100%;
+            padding: 12px 18px;
+            background: var(--bg-table);
+            color: #ffd700;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .aura-toggle:hover { background: rgba(15, 52, 96, 0.9); }
+        .aura-toggle .toggle-icon { font-size: 0.8em; transition: transform 0.2s; }
+        .aura-content {
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+            max-height: 3000px;
+            opacity: 1;
+        }
+        .aura-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+        .aura-category { margin-top: 18px; }
+        .aura-category h5 {
+            color: #60a5fa;
+            margin: 0 0 10px 0;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95em;
+        }
+        .aura-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(45, 55, 72, 0.4);
+        }
+        .aura-name {
+            width: 130px;
+            font-size: 0.85em;
+            flex-shrink: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .aura-uptime {
+            width: 90px;
+            text-align: center;
+            font-size: 0.8em;
+            color: var(--neutral);
+            flex-shrink: 0;
+            line-height: 1.3;
+        }
+        .aura-uptime .upt-a { color: rgba(96, 165, 250, 0.9); }
+        .aura-uptime .upt-b { color: rgba(233, 69, 96, 0.9); }
+        .aura-timeline {
+            flex: 1;
+            min-width: 140px;
+        }
+        .timeline-line {
+            height: 8px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 2px;
+            position: relative;
+            margin: 1px 0;
+            overflow: hidden;
+        }
+        .timeline-band {
+            position: absolute;
+            height: 100%;
+            border-radius: 1px;
+            min-width: 2px;
+        }
+        .line-a .timeline-band { background: rgba(96, 165, 250, 0.85); }
+        .line-b .timeline-band { background: rgba(233, 69, 96, 0.85); }
+        .aura-uses {
+            width: 60px;
+            text-align: right;
+            font-size: 0.8em;
+            color: var(--neutral);
+            flex-shrink: 0;
+        }
+        .aura-legend {
+            display: flex;
+            gap: 16px;
+            font-size: 0.8em;
+            color: var(--neutral);
+            margin-bottom: 8px;
+            justify-content: flex-end;
+        }
+        .aura-legend span { display: flex; align-items: center; gap: 4px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+        .legend-a { background: rgba(96, 165, 250, 0.85); }
+        .legend-b { background: rgba(233, 69, 96, 0.85); }
+        
+        /* 时间轴结束标记（带箭头） */
+        .timeline-end-marker {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            border-radius: 2px;
+            z-index: 3;
+            cursor: help;
+        }
+        .timeline-end-marker::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -3px;
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 5px solid;
+        }
+        .line-a .timeline-end-marker {
+            background: rgba(96, 165, 250, 0.95);
+            box-shadow: 0 0 5px rgba(96, 165, 250, 0.7);
+        }
+        .line-a .timeline-end-marker::before { border-bottom-color: rgba(96, 165, 250, 0.95); }
+        .line-b .timeline-end-marker {
+            background: rgba(233, 69, 96, 0.95);
+            box-shadow: 0 0 5px rgba(233, 69, 96, 0.7);
+        }
+        .line-b .timeline-end-marker::before { border-bottom-color: rgba(233, 69, 96, 0.95); }
+        
+        /* 未覆盖区间 */
+        .timeline-gap {
+            position: absolute;
+            height: 100%;
+            border-radius: 1px;
+            background: transparent;
+            cursor: help;
+            z-index: 1;
+        }
+        .timeline-gap:hover { background: rgba(255, 255, 255, 0.08); }
+        
+        /* 警告横幅 */
+        .warning-banner {
+            background: rgba(248, 113, 113, 0.15);
+            border: 1px solid rgba(248, 113, 113, 0.4);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 16px 0 24px 0;
+            color: #fecaca;
+            font-size: 0.95em;
+        }
+        .warning-banner .warning-title {
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #f87171;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚔️ WCL 战斗记录对比分析</h1>
+        
+        
+        <div class="warning-banner">
+            <div class="warning-title">⚠️ 注意</div>
+            <div>提示：两次战斗不是同一个 Boss（战斗A: 加拉克苏斯大王，战斗B: 瓦格里双子），战斗环境、机制和时间轴可能完全不同，对比结果仅供参考。</div>
+        </div>
+        
+        <h2>📊 DPS 变化概览</h2>
+        <table>
+            <tr>
+                <th>战斗记录</th>
+                <th>Boss名称</th>
+                <th>玩家名称</th>
+                <th>职业/专精</th>
+                <th>装等</th>
+                <th>击杀时长</th>
+                <th>总DPS</th>
+                <th>总CPM</th>
+            </tr>
+
+            <tr>
+                <td><span style="color:#60a5fa">●</span> 冰蓝猫猫头</td>
+                <td>加拉克苏斯大王</td>
+                <td><strong>冰蓝猫猫头</strong></td>
+                <td>冰霜法师</td>
+                <td>227.0</td>
+                <td>138s</td>
+                <td>10.8K</td>
+                <td>0.0</td>
+            </tr>
+            <tr>
+                <td><span style="color:var(--text)">●</span> 冰蓝猫猫头</td>
+                <td>瓦格里双子</td>
+                <td><strong>冰蓝猫猫头</strong></td>
+                <td>冰霜法师</td>
+                <td class="neutral">227.0 <span style="font-size:0.85em">(+0.0)</span></td>
+                <td class="negative">140s <span style="font-size:0.85em">(+2s)</span></td>
+                <td class="positive">13.4K <span style="font-size:0.85em">(+2611)</span></td>
+                <td class="neutral">0.0 <span style="font-size:0.85em">(+0.0)</span></td>
+            </tr></table>
+        <div class="player-section">
+            <div class="aura-section">
+                <button class="aura-toggle" onclick="toggleAura(this)">
+                    <span>⚔️ 伤害构成</span>
+                    <span class="toggle-icon">▼</span>
+                </button>
+                <div class="aura-content">
+                    <div class="stats-box" style="overflow-x: auto;">
+                        <table class="damage-table">
+                            <tr>
+                                <th>技能</th>
+                                <th>伤害</th>
+                                <th>施法次数</th>
+                                <th>单次伤害</th>
+                                <th>跳数</th>
+                                <th>每跳伤害</th>
+                                <th>暴击率</th>
+                                <th>覆盖</th>
+                                <th>DPS</th>
+                            </tr>
+
+                    <tr class="diff-row">
+                        <td><strong>寒冰箭</strong></td>
+                        <td class="positive">+268.5k</td>
+                        <td class="positive">+4</td>
+                        <td class="positive">+3.0k</td>
+                        <td class="positive">+3</td>
+                        <td class="positive">+3.2k</td>
+                        <td class="positive">+10.3%</td>
+                        <td class="negative">-1.6%</td>
+                        <td class="positive">+1.8k</td>
+                    </tr>
+                    <tr class="row-a">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>909.6k <span style="color:var(--neutral)">(62.7%)</span></td>
+                        <td>69</td>
+                        <td>13.2k</td>
+                        <td>69</td>
+                        <td>13.2k</td>
+                        <td>53.6%</td>
+                        <td>1.6%</td>
+                        <td>6586</td>
+                    </tr>
+                    <tr class="row-b">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>1.2M <span style="color:var(--neutral)">(65.8%)</span></td>
+                        <td>73</td>
+                        <td>16.1k</td>
+                        <td>72</td>
+                        <td>16.4k</td>
+                        <td>63.9%</td>
+                        <td>-</td>
+                        <td>8420</td>
+                    </tr>
+                    <tr class="diff-row">
+                        <td><strong>霜火之箭</strong></td>
+                        <td class="positive">+71.4k</td>
+                        <td class="positive">+2</td>
+                        <td class="positive">+3.7k</td>
+                        <td class="positive">+8</td>
+                        <td class="positive">+864</td>
+                        <td class="positive">+5.2%</td>
+                        <td class="positive">+14.2%</td>
+                        <td class="positive">+497</td>
+                    </tr>
+                    <tr class="row-a">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>133.9k <span style="color:var(--neutral)">(9.2%)</span></td>
+                        <td>7</td>
+                        <td>19.1k</td>
+                        <td>25</td>
+                        <td>5.4k</td>
+                        <td>16.0%</td>
+                        <td>40.5%</td>
+                        <td>970</td>
+                    </tr>
+                    <tr class="row-b">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>205.3k <span style="color:var(--neutral)">(11.5%)</span></td>
+                        <td>9</td>
+                        <td>22.8k</td>
+                        <td>33</td>
+                        <td>6.2k</td>
+                        <td>21.2%</td>
+                        <td>54.7%</td>
+                        <td>1468</td>
+                    </tr>
+                    <tr class="diff-row">
+                        <td><strong>水箭</strong></td>
+                        <td class="negative">-33.7k</td>
+                        <td class="negative">-11</td>
+                        <td class="negative">-70</td>
+                        <td class="negative">-11</td>
+                        <td class="negative">-58</td>
+                        <td class="negative">-2.9%</td>
+                        <td class="neutral">+0.0%</td>
+                        <td class="negative">-258</td>
+                    </tr>
+                    <tr class="row-a">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>188.0k <span style="color:var(--neutral)">(13.0%)</span></td>
+                        <td>70</td>
+                        <td>2.7k</td>
+                        <td>68</td>
+                        <td>2.8k</td>
+                        <td>48.5%</td>
+                        <td>-</td>
+                        <td>1361</td>
+                    </tr>
+                    <tr class="row-b">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>154.3k <span style="color:var(--neutral)">(8.6%)</span></td>
+                        <td>59</td>
+                        <td>2.6k</td>
+                        <td>57</td>
+                        <td>2.7k</td>
+                        <td>45.6%</td>
+                        <td>-</td>
+                        <td>1103</td>
+                    </tr>
+                    <tr class="diff-row">
+                        <td><strong>深度冻结</strong></td>
+                        <td class="negative">-5.5k</td>
+                        <td class="neutral">0</td>
+                        <td class="negative">-1.4k</td>
+                        <td class="neutral">0</td>
+                        <td class="negative">-1.4k</td>
+                        <td class="neutral">+0.0%</td>
+                        <td class="neutral">+0.0%</td>
+                        <td class="negative">-52</td>
+                    </tr>
+                    <tr class="row-a">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>142.1k <span style="color:var(--neutral)">(9.8%)</span></td>
+                        <td>4</td>
+                        <td>35.5k</td>
+                        <td>4</td>
+                        <td>35.5k</td>
+                        <td>100.0%</td>
+                        <td>-</td>
+                        <td>1029</td>
+                    </tr>
+                    <tr class="row-b">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>136.6k <span style="color:var(--neutral)">(7.6%)</span></td>
+                        <td>4</td>
+                        <td>34.1k</td>
+                        <td>4</td>
+                        <td>34.1k</td>
+                        <td>100.0%</td>
+                        <td>-</td>
+                        <td>976</td>
+                    </tr>
+                    <tr class="diff-row">
+                        <td><strong>冰枪术</strong></td>
+                        <td class="positive">+45.0k</td>
+                        <td class="positive">+6</td>
+                        <td class="negative">-3.3k</td>
+                        <td class="positive">+6</td>
+                        <td class="negative">-3.3k</td>
+                        <td class="neutral">+0.0%</td>
+                        <td class="neutral">+0.0%</td>
+                        <td class="positive">+318</td>
+                    </tr>
+                    <tr class="row-a">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>37.4k <span style="color:var(--neutral)">(2.6%)</span></td>
+                        <td>3</td>
+                        <td>12.5k</td>
+                        <td>3</td>
+                        <td>12.5k</td>
+                        <td>100.0%</td>
+                        <td>-</td>
+                        <td>271</td>
+                    </tr>
+                    <tr class="row-b">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>82.4k <span style="color:var(--neutral)">(4.6%)</span></td>
+                        <td>9</td>
+                        <td>9.2k</td>
+                        <td>9</td>
+                        <td>9.2k</td>
+                        <td>100.0%</td>
+                        <td>-</td>
+                        <td>589</td>
+                    </tr>
+                    <tr class="diff-row">
+                        <td><strong>镜像</strong></td>
+                        <td class="negative">-5.8k</td>
+                        <td class="neutral">0</td>
+                        <td class="negative">-5.8k</td>
+                        <td class="negative">-12</td>
+                        <td class="positive">+108</td>
+                        <td class="positive">+9.2%</td>
+                        <td class="neutral">+0.0%</td>
+                        <td class="negative">-44</td>
+                    </tr>
+                    <tr class="row-a">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>39.9k <span style="color:var(--neutral)">(2.8%)</span></td>
+                        <td>1</td>
+                        <td>39.9k</td>
+                        <td>49</td>
+                        <td>814</td>
+                        <td>44.9%</td>
+                        <td>-</td>
+                        <td>289</td>
+                    </tr>
+                    <tr class="row-b">
+                        <td><span style="color:var(--neutral)">冰蓝猫猫头</span></td>
+                        <td>34.2k <span style="color:var(--neutral)">(1.9%)</span></td>
+                        <td>1</td>
+                        <td>34.2k</td>
+                        <td>37</td>
+                        <td>923</td>
+                        <td>54.1%</td>
+                        <td>-</td>
+                        <td>244</td>
+                    </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="player-section">
+            <div class="aura-section">
+                <button class="aura-toggle" onclick="toggleAura(this)">
+                    <span>📊 增益与减益覆盖</span>
+                    <span class="toggle-icon">▶</span>
+                </button>
+                <div class="aura-content collapsed">
+                    <div class="aura-axis-info" style="font-size:0.8em;color:var(--neutral);text-align:right;margin-bottom:8px;">
+                        时间轴基准: 140s &nbsp;|&nbsp; 冰蓝猫猫头: 138s &nbsp;|&nbsp; 冰蓝猫猫头: 140s
+                    </div>
+
+                    <div class="aura-category">
+                        <h5>增益 (Buffs)</h5>
+                        <div class="aura-legend">
+                            <span><span class="legend-dot legend-a"></span> {name_a}</span>
+                            <span><span class="legend-dot legend-b"></span> {name_b}</span>
+                        </div>
+                        <div class="aura-list">
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="专注光环">专注光环</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">77.8%</span><br><span class="upt-b">0.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:0.0%;width:13.0%" title="0.0s ~ 18.2s (持续18.2s)"></div><div class="timeline-band" style="left:16.5%;width:63.8%" title="23.0s ~ 112.4s (持续89.3s)"></div><div class="timeline-gap" style="left:13.0%;width:3.5%" title="未覆盖: 18.2s ~ 23.0s (空档4.9s)"></div><div class="timeline-gap" style="left:80.3%;width:18.4%" title="未覆盖: 112.4s ~ 138.1s (空档25.7s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:100.0%" title="未覆盖: 0.0s ~ 139.9s (空档139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">2 / 0</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="专注魔法">专注魔法</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">97.3%</span><br><span class="upt-b">98.7%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:2.5%;width:83.8%" title="3.5s ~ 120.7s (持续117.2s)"></div><div class="timeline-band" style="left:86.4%;width:12.3%" title="120.9s ~ 138.1s (持续17.2s)"></div><div class="timeline-gap" style="left:0.0%;width:2.5%" title="未覆盖: 0.0s ~ 3.5s (空档3.5s)"></div><div class="timeline-gap" style="left:86.3%;width:0.3%" title="未覆盖: 120.7s ~ 120.9s (空档0.2s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:1.3%;width:98.7%" title="1.8s ~ 139.9s (持续138.1s)"></div><div class="timeline-gap" style="left:0.0%;width:1.3%" title="未覆盖: 0.0s ~ 1.8s (空档1.8s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">58 / 51</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="亮纹">亮纹</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">25.6%</span><br><span class="upt-b">23.5%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:6.1%;width:10.7%" title="8.6s ~ 23.6s (持续15.0s)"></div><div class="timeline-band" style="left:51.0%;width:10.7%" title="71.4s ~ 86.4s (持续15.0s)"></div><div class="timeline-band" style="left:94.9%;width:3.9%" title="132.7s ~ 138.1s (持续5.4s)"></div><div class="timeline-gap" style="left:0.0%;width:6.1%" title="未覆盖: 0.0s ~ 8.6s (空档8.6s)"></div><div class="timeline-gap" style="left:16.9%;width:34.2%" title="未覆盖: 23.6s ~ 71.4s (空档47.8s)"></div><div class="timeline-gap" style="left:61.7%;width:33.1%" title="未覆盖: 86.4s ~ 132.7s (空档46.3s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:4.8%;width:10.7%" title="6.7s ~ 21.6s (持续15.0s)"></div><div class="timeline-band" style="left:51.2%;width:10.7%" title="71.7s ~ 86.7s (持续15.0s)"></div><div class="timeline-band" style="left:97.9%;width:2.1%" title="137.0s ~ 139.9s (持续2.9s)"></div><div class="timeline-gap" style="left:0.0%;width:4.8%" title="未覆盖: 0.0s ~ 6.7s (空档6.7s)"></div><div class="timeline-gap" style="left:15.5%;width:35.8%" title="未覆盖: 21.6s ~ 71.7s (空档50.0s)"></div><div class="timeline-gap" style="left:61.9%;width:36.0%" title="未覆盖: 86.7s ~ 137.0s (空档50.4s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">3 / 3</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="先祖坚韧">先祖坚韧</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">0.0%</span><br><span class="upt-b">52.8%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:98.7%" title="未覆盖: 0.0s ~ 138.1s (空档138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:7.1%;width:10.7%" title="10.0s ~ 25.0s (持续15.0s)"></div><div class="timeline-band" style="left:26.0%;width:10.7%" title="36.4s ~ 51.4s (持续15.0s)"></div><div class="timeline-band" style="left:55.5%;width:21.9%" title="77.7s ~ 108.4s (持续30.7s)"></div><div class="timeline-band" style="left:90.5%;width:9.5%" title="126.7s ~ 139.9s (持续13.2s)"></div><div class="timeline-gap" style="left:0.0%;width:7.1%" title="未覆盖: 0.0s ~ 10.0s (空档10.0s)"></div><div class="timeline-gap" style="left:17.9%;width:8.2%" title="未覆盖: 25.0s ~ 36.4s (空档11.5s)"></div><div class="timeline-gap" style="left:36.7%;width:18.8%" title="未覆盖: 51.4s ~ 77.7s (空档26.3s)"></div><div class="timeline-gap" style="left:77.5%;width:13.1%" title="未覆盖: 108.4s ~ 126.7s (空档18.3s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">0 / 7</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="冰冷血脉">冰冷血脉</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">29.0%</span><br><span class="upt-b">28.7%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:3.4%;width:14.3%" title="4.7s ~ 24.7s (持续20.0s)"></div><div class="timeline-band" style="left:20.3%;width:14.3%" title="28.4s ~ 48.4s (持续20.0s)"></div><div class="timeline-gap" style="left:0.0%;width:3.4%" title="未覆盖: 0.0s ~ 4.7s (空档4.7s)"></div><div class="timeline-gap" style="left:17.7%;width:2.6%" title="未覆盖: 24.7s ~ 28.4s (空档3.7s)"></div><div class="timeline-gap" style="left:34.6%;width:64.1%" title="未覆盖: 48.4s ~ 138.1s (空档89.7s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:4.4%;width:14.4%" title="6.2s ~ 26.3s (持续20.1s)"></div><div class="timeline-band" style="left:18.9%;width:14.3%" title="26.4s ~ 46.4s (持续20.0s)"></div><div class="timeline-gap" style="left:0.0%;width:4.4%" title="未覆盖: 0.0s ~ 6.2s (空档6.2s)"></div><div class="timeline-gap" style="left:18.8%;width:0.3%" title="未覆盖: 26.3s ~ 26.4s (空档0.1s)"></div><div class="timeline-gap" style="left:33.2%;width:66.8%" title="未覆盖: 46.4s ~ 139.9s (空档93.5s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">2 / 2</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="冰霜巨龙合剂">冰霜巨龙合剂</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">0.0%</span><br><span class="upt-b">100.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:98.7%" title="未覆盖: 0.0s ~ 138.1s (空档138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.0%;width:100.0%" title="0.0s ~ 139.9s (持续139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">0 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="命令怒吼">命令怒吼</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">0.0%</span><br><span class="upt-b">39.7%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:98.7%" title="未覆盖: 0.0s ~ 138.1s (空档138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.0%;width:39.7%" title="0.0s ~ 55.6s (持续55.6s)"></div><div class="timeline-gap" style="left:39.7%;width:60.3%" title="未覆盖: 55.6s ~ 139.9s (空档84.3s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">0 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="回春术">回春术</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">0.0%</span><br><span class="upt-b">6.8%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:98.7%" title="未覆盖: 0.0s ~ 138.1s (空档138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:10.7%;width:6.8%" title="15.0s ~ 24.5s (持续9.5s)"></div><div class="timeline-gap" style="left:0.0%;width:10.7%" title="未覆盖: 0.0s ~ 15.0s (空档15.0s)"></div><div class="timeline-gap" style="left:17.5%;width:82.5%" title="未覆盖: 24.5s ~ 139.9s (空档115.5s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">0 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="外交">外交</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">10.9%</span><br><span class="upt-b">10.7%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:3.4%;width:10.7%" title="4.7s ~ 19.7s (持续15.0s)"></div><div class="timeline-gap" style="left:0.0%;width:3.4%" title="未覆盖: 0.0s ~ 4.7s (空档4.7s)"></div><div class="timeline-gap" style="left:14.1%;width:84.6%" title="未覆盖: 19.7s ~ 138.1s (空档118.4s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:4.4%;width:10.7%" title="6.2s ~ 21.2s (持续15.0s)"></div><div class="timeline-gap" style="left:0.0%;width:4.4%" title="未覆盖: 0.0s ~ 6.2s (空档6.2s)"></div><div class="timeline-gap" style="left:15.1%;width:84.9%" title="未覆盖: 21.2s ~ 139.9s (空档118.7s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="大地生命">大地生命</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">0.0%</span><br><span class="upt-b">24.2%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:98.7%" title="未覆盖: 0.0s ~ 138.1s (空档138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:22.0%;width:15.6%" title="30.8s ~ 52.6s (持续21.9s)"></div><div class="timeline-band" style="left:68.0%;width:8.6%" title="95.2s ~ 107.2s (持续12.0s)"></div><div class="timeline-gap" style="left:0.0%;width:22.0%" title="未覆盖: 0.0s ~ 30.8s (空档30.8s)"></div><div class="timeline-gap" style="left:37.6%;width:30.4%" title="未覆盖: 52.6s ~ 95.2s (空档42.5s)"></div><div class="timeline-gap" style="left:76.6%;width:23.4%" title="未覆盖: 107.2s ~ 139.9s (空档32.7s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">0 / 4</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="寒冬号角">寒冬号角</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">100.0%</span><br><span class="upt-b">100.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:0.0%;width:29.4%" title="0.0s ~ 41.2s (持续41.2s)"></div><div class="timeline-band" style="left:29.4%;width:12.0%" title="41.2s ~ 58.0s (持续16.8s)"></div><div class="timeline-band" style="left:41.4%;width:3.2%" title="58.0s ~ 62.4s (持续4.4s)"></div><div class="timeline-band" style="left:44.6%;width:47.9%" title="62.4s ~ 129.5s (持续67.1s)"></div><div class="timeline-band" style="left:92.5%;width:6.2%" title="129.5s ~ 138.1s (持续8.7s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.0%;width:24.6%" title="0.0s ~ 34.4s (持续34.4s)"></div><div class="timeline-band" style="left:24.6%;width:24.8%" title="34.4s ~ 69.1s (持续34.7s)"></div><div class="timeline-band" style="left:49.4%;width:6.1%" title="69.1s ~ 77.6s (持续8.5s)"></div><div class="timeline-band" style="left:55.4%;width:16.8%" title="77.6s ~ 101.1s (持续23.6s)"></div><div class="timeline-band" style="left:72.3%;width:13.5%" title="101.1s ~ 120.0s (持续18.8s)"></div><div class="timeline-band" style="left:85.8%;width:14.2%" title="120.0s ~ 139.9s (持续19.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">6 / 8</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="寒冰指">寒冰指</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">14.9%</span><br><span class="upt-b">35.5%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:4.0%;width:2.2%" title="5.6s ~ 8.7s (持续3.1s)"></div><div class="timeline-band" style="left:17.6%;width:0.3%" title="24.6s ~ 24.7s (持续0.1s)"></div><div class="timeline-band" style="left:18.3%;width:1.7%" title="25.6s ~ 28.0s (持续2.4s)"></div><div class="timeline-band" style="left:28.4%;width:1.7%" title="39.7s ~ 42.0s (持续2.3s)"></div><div class="timeline-band" style="left:39.6%;width:1.8%" title="55.4s ~ 57.9s (持续2.5s)"></div><div class="timeline-band" style="left:51.0%;width:1.8%" title="71.4s ~ 73.9s (持续2.5s)"></div><div class="timeline-band" style="left:63.8%;width:1.6%" title="89.2s ~ 91.5s (持续2.3s)"></div><div class="timeline-band" style="left:69.1%;width:1.4%" title="96.7s ~ 98.7s (持续2.0s)"></div><div class="timeline-band" style="left:86.4%;width:0.6%" title="120.8s ~ 121.6s (持续0.8s)"></div><div class="timeline-band" style="left:96.1%;width:1.8%" title="134.5s ~ 137.0s (持续2.5s)"></div><div class="timeline-band" style="left:98.7%;width:0.3%" title="138.1s ~ 138.1s (持续0.0s)"></div><div class="timeline-gap" style="left:0.0%;width:4.0%" title="未覆盖: 0.0s ~ 5.6s (空档5.6s)"></div><div class="timeline-gap" style="left:6.2%;width:11.4%" title="未覆盖: 8.7s ~ 24.6s (空档15.9s)"></div><div class="timeline-gap" style="left:17.6%;width:0.7%" title="未覆盖: 24.7s ~ 25.6s (空档1.0s)"></div><div class="timeline-gap" style="left:20.0%;width:8.4%" title="未覆盖: 28.0s ~ 39.7s (空档11.7s)"></div><div class="timeline-gap" style="left:30.0%;width:9.5%" title="未覆盖: 42.0s ~ 55.4s (空档13.3s)"></div><div class="timeline-gap" style="left:41.4%;width:9.7%" title="未覆盖: 57.9s ~ 71.4s (空档13.5s)"></div><div class="timeline-gap" style="left:52.8%;width:11.0%" title="未覆盖: 73.9s ~ 89.2s (空档15.3s)"></div><div class="timeline-gap" style="left:65.4%;width:3.7%" title="未覆盖: 91.5s ~ 96.7s (空档5.2s)"></div><div class="timeline-gap" style="left:70.6%;width:15.8%" title="未覆盖: 98.7s ~ 120.8s (空档22.1s)"></div><div class="timeline-gap" style="left:86.9%;width:9.2%" title="未覆盖: 121.6s ~ 134.5s (空档12.9s)"></div><div class="timeline-gap" style="left:97.9%;width:0.8%" title="未覆盖: 137.0s ~ 138.1s (空档1.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:11.9%;width:1.1%" title="16.6s ~ 18.1s (持续1.5s)"></div><div class="timeline-band" style="left:17.3%;width:1.3%" title="24.2s ~ 26.0s (持续1.8s)"></div><div class="timeline-band" style="left:18.9%;width:2.0%" title="26.5s ~ 29.3s (持续2.8s)"></div><div class="timeline-band" style="left:21.3%;width:2.0%" title="29.8s ~ 32.6s (持续2.8s)"></div><div class="timeline-band" style="left:23.6%;width:2.0%" title="33.1s ~ 35.9s (持续2.8s)"></div><div class="timeline-band" style="left:28.3%;width:1.3%" title="39.6s ~ 41.5s (持续1.8s)"></div><div class="timeline-band" style="left:33.4%;width:2.9%" title="46.7s ~ 50.8s (持续4.1s)"></div><div class="timeline-band" style="left:41.6%;width:2.6%" title="58.1s ~ 61.8s (持续3.7s)"></div><div class="timeline-band" style="left:49.4%;width:2.7%" title="69.2s ~ 73.0s (持续3.8s)"></div><div class="timeline-band" style="left:54.6%;width:2.2%" title="76.4s ~ 79.5s (持续3.1s)"></div><div class="timeline-band" style="left:66.5%;width:2.4%" title="93.1s ~ 96.5s (持续3.4s)"></div><div class="timeline-band" style="left:71.4%;width:2.2%" title="99.9s ~ 103.1s (持续3.1s)"></div><div class="timeline-band" style="left:74.0%;width:3.1%" title="103.5s ~ 107.8s (持续4.3s)"></div><div class="timeline-band" style="left:85.5%;width:1.9%" title="119.6s ~ 122.3s (持续2.6s)"></div><div class="timeline-band" style="left:89.6%;width:2.5%" title="125.3s ~ 128.8s (持续3.5s)"></div><div class="timeline-band" style="left:94.5%;width:3.1%" title="132.3s ~ 136.6s (持续4.3s)"></div><div class="timeline-gap" style="left:0.0%;width:11.9%" title="未覆盖: 0.0s ~ 16.6s (空档16.6s)"></div><div class="timeline-gap" style="left:13.0%;width:4.3%" title="未覆盖: 18.1s ~ 24.2s (空档6.0s)"></div><div class="timeline-gap" style="left:18.6%;width:0.3%" title="未覆盖: 26.0s ~ 26.5s (空档0.5s)"></div><div class="timeline-gap" style="left:20.9%;width:0.3%" title="未覆盖: 29.3s ~ 29.8s (空档0.5s)"></div><div class="timeline-gap" style="left:23.3%;width:0.3%" title="未覆盖: 32.6s ~ 33.1s (空档0.5s)"></div><div class="timeline-gap" style="left:25.6%;width:2.7%" title="未覆盖: 35.9s ~ 39.6s (空档3.8s)"></div><div class="timeline-gap" style="left:29.6%;width:3.7%" title="未覆盖: 41.5s ~ 46.7s (空档5.2s)"></div><div class="timeline-gap" style="left:36.3%;width:5.3%" title="未覆盖: 50.8s ~ 58.1s (空档7.3s)"></div><div class="timeline-gap" style="left:44.2%;width:5.2%" title="未覆盖: 61.8s ~ 69.2s (空档7.3s)"></div><div class="timeline-gap" style="left:52.2%;width:2.5%" title="未覆盖: 73.0s ~ 76.4s (空档3.4s)"></div><div class="timeline-gap" style="left:56.9%;width:9.7%" title="未覆盖: 79.5s ~ 93.1s (空档13.5s)"></div><div class="timeline-gap" style="left:69.0%;width:2.5%" title="未覆盖: 96.5s ~ 99.9s (空档3.4s)"></div><div class="timeline-gap" style="left:73.7%;width:0.3%" title="未覆盖: 103.1s ~ 103.5s (空档0.5s)"></div><div class="timeline-gap" style="left:77.1%;width:8.4%" title="未覆盖: 107.8s ~ 119.6s (空档11.8s)"></div><div class="timeline-gap" style="left:87.4%;width:2.2%" title="未覆盖: 122.3s ~ 125.3s (空档3.0s)"></div><div class="timeline-gap" style="left:92.1%;width:2.4%" title="未覆盖: 128.8s ~ 132.3s (空档3.4s)"></div><div class="timeline-gap" style="left:97.6%;width:2.4%" title="未覆盖: 136.6s ~ 139.9s (空档3.3s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">12 / 17</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="强效王者祝福">强效王者祝福</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">100.0%</span><br><span class="upt-b">100.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:0.0%;width:98.7%" title="0.0s ~ 138.1s (持续138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.0%;width:100.0%" title="0.0s ~ 139.9s (持续139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="思维冷却">思维冷却</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">16.6%</span><br><span class="upt-b">23.3%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:1.8%;width:1.3%" title="2.6s ~ 4.4s (持续1.8s)"></div><div class="timeline-band" style="left:15.5%;width:2.2%" title="21.6s ~ 24.6s (持续3.0s)"></div><div class="timeline-band" style="left:23.7%;width:0.8%" title="33.2s ~ 34.3s (持续1.1s)"></div><div class="timeline-band" style="left:26.9%;width:0.8%" title="37.6s ~ 38.7s (持续1.1s)"></div><div class="timeline-band" style="left:37.5%;width:6.6%" title="52.5s ~ 61.8s (持续9.3s)"></div><div class="timeline-band" style="left:51.6%;width:3.4%" title="72.1s ~ 76.9s (持续4.7s)"></div><div class="timeline-band" style="left:58.4%;width:1.3%" title="81.7s ~ 83.4s (持续1.8s)"></div><div class="timeline-gap" style="left:0.0%;width:1.8%" title="未覆盖: 0.0s ~ 2.6s (空档2.6s)"></div><div class="timeline-gap" style="left:3.1%;width:12.3%" title="未覆盖: 4.4s ~ 21.6s (空档17.3s)"></div><div class="timeline-gap" style="left:17.6%;width:6.1%" title="未覆盖: 24.6s ~ 33.2s (空档8.5s)"></div><div class="timeline-gap" style="left:24.5%;width:2.4%" title="未覆盖: 34.3s ~ 37.6s (空档3.3s)"></div><div class="timeline-gap" style="left:27.7%;width:9.9%" title="未覆盖: 38.7s ~ 52.5s (空档13.8s)"></div><div class="timeline-gap" style="left:44.2%;width:7.4%" title="未覆盖: 61.8s ~ 72.1s (空档10.3s)"></div><div class="timeline-gap" style="left:54.9%;width:3.4%" title="未覆盖: 76.9s ~ 81.7s (空档4.8s)"></div><div class="timeline-gap" style="left:59.6%;width:39.1%" title="未覆盖: 83.4s ~ 138.1s (空档54.7s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:3.0%;width:3.3%" title="4.2s ~ 8.8s (持续4.6s)"></div><div class="timeline-band" style="left:12.2%;width:2.5%" title="17.1s ~ 20.6s (持续3.5s)"></div><div class="timeline-band" style="left:16.9%;width:4.0%" title="23.7s ~ 29.3s (持续5.6s)"></div><div class="timeline-band" style="left:31.2%;width:1.9%" title="43.6s ~ 46.2s (持续2.6s)"></div><div class="timeline-band" style="left:39.9%;width:1.3%" title="55.9s ~ 57.7s (持续1.8s)"></div><div class="timeline-band" style="left:44.2%;width:2.9%" title="61.8s ~ 65.9s (持续4.1s)"></div><div class="timeline-band" style="left:50.9%;width:1.3%" title="71.2s ~ 73.0s (持续1.8s)"></div><div class="timeline-band" style="left:62.8%;width:1.3%" title="87.9s ~ 89.6s (持续1.8s)"></div><div class="timeline-band" style="left:89.3%;width:5.0%" title="124.9s ~ 131.8s (持续6.9s)"></div><div class="timeline-gap" style="left:0.0%;width:3.0%" title="未覆盖: 0.0s ~ 4.2s (空档4.2s)"></div><div class="timeline-gap" style="left:6.3%;width:5.9%" title="未覆盖: 8.8s ~ 17.1s (空档8.3s)"></div><div class="timeline-gap" style="left:14.7%;width:2.2%" title="未覆盖: 20.6s ~ 23.7s (空档3.1s)"></div><div class="timeline-gap" style="left:20.9%;width:10.2%" title="未覆盖: 29.3s ~ 43.6s (空档14.3s)"></div><div class="timeline-gap" style="left:33.0%;width:6.9%" title="未覆盖: 46.2s ~ 55.9s (空档9.7s)"></div><div class="timeline-gap" style="left:41.2%;width:3.0%" title="未覆盖: 57.7s ~ 61.8s (空档4.2s)"></div><div class="timeline-gap" style="left:47.1%;width:3.8%" title="未覆盖: 65.9s ~ 71.2s (空档5.3s)"></div><div class="timeline-gap" style="left:52.2%;width:10.6%" title="未覆盖: 73.0s ~ 87.9s (空档14.9s)"></div><div class="timeline-gap" style="left:64.1%;width:25.2%" title="未覆盖: 89.6s ~ 124.9s (空档35.2s)"></div><div class="timeline-gap" style="left:94.2%;width:5.8%" title="未覆盖: 131.8s ~ 139.9s (空档8.1s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">7 / 12</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="恶魔契约">恶魔契约</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">91.2%</span><br><span class="upt-b">98.5%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:8.7%;width:90.0%" title="12.2s ~ 138.1s (持续125.9s)"></div><div class="timeline-gap" style="left:0.0%;width:8.7%" title="未覆盖: 0.0s ~ 12.2s (空档12.2s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:1.5%;width:98.5%" title="2.0s ~ 139.9s (持续137.9s)"></div><div class="timeline-gap" style="left:0.0%;width:1.5%" title="未覆盖: 0.0s ~ 2.0s (空档2.0s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">8 / 13</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="惩罚光环">惩罚光环</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">100.0%</span><br><span class="upt-b">0.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:0.0%;width:5.5%" title="0.0s ~ 7.6s (持续7.6s)"></div><div class="timeline-band" style="left:5.5%;width:11.9%" title="7.6s ~ 24.3s (持续16.6s)"></div><div class="timeline-band" style="left:17.3%;width:81.4%" title="24.3s ~ 138.1s (持续113.9s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:100.0%" title="未覆盖: 0.0s ~ 139.9s (空档139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">3 / 0</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="拥抱蜘蛛">拥抱蜘蛛</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">14.5%</span><br><span class="upt-b">21.4%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:15.5%;width:7.2%" title="21.6s ~ 31.6s (持续10.0s)"></div><div class="timeline-band" style="left:64.3%;width:7.1%" title="90.0s ~ 100.0s (持续10.0s)"></div><div class="timeline-gap" style="left:0.0%;width:15.5%" title="未覆盖: 0.0s ~ 21.6s (空档21.6s)"></div><div class="timeline-gap" style="left:22.6%;width:41.7%" title="未覆盖: 31.6s ~ 90.0s (空档58.3s)"></div><div class="timeline-gap" style="left:71.4%;width:27.3%" title="未覆盖: 100.0s ~ 138.1s (空档38.2s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:8.7%;width:7.1%" title="12.2s ~ 22.1s (持续9.9s)"></div><div class="timeline-band" style="left:41.2%;width:7.1%" title="57.7s ~ 67.7s (持续10.0s)"></div><div class="timeline-band" style="left:83.0%;width:7.1%" title="116.1s ~ 126.1s (持续10.0s)"></div><div class="timeline-gap" style="left:0.0%;width:8.7%" title="未覆盖: 0.0s ~ 12.2s (空档12.2s)"></div><div class="timeline-gap" style="left:15.8%;width:25.4%" title="未覆盖: 22.1s ~ 57.7s (空档35.6s)"></div><div class="timeline-gap" style="left:48.4%;width:34.6%" title="未覆盖: 67.7s ~ 116.1s (空档48.5s)"></div><div class="timeline-gap" style="left:90.2%;width:9.8%" title="未覆盖: 126.1s ~ 139.9s (空档13.8s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">2 / 3</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="新生希望">新生希望</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">99.2%</span><br><span class="upt-b">97.8%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:0.8%;width:97.9%" title="1.2s ~ 138.1s (持续137.0s)"></div><div class="timeline-gap" style="left:0.0%;width:0.8%" title="未覆盖: 0.0s ~ 1.2s (空档1.2s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:2.2%;width:97.8%" title="3.1s ~ 139.9s (持续136.8s)"></div><div class="timeline-gap" style="left:0.0%;width:2.2%" title="未覆盖: 0.0s ~ 3.1s (空档3.1s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">8 / 8</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="枭兽光环">枭兽光环</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">100.0%</span><br><span class="upt-b">100.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:0.0%;width:98.7%" title="0.0s ~ 138.1s (持续138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.0%;width:100.0%" title="0.0s ~ 139.9s (持续139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="法力涌动">法力涌动</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">10.9%</span><br><span class="upt-b">20.3%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:3.4%;width:10.7%" title="4.7s ~ 19.7s (持续15.0s)"></div><div class="timeline-gap" style="left:0.0%;width:3.4%" title="未覆盖: 0.0s ~ 4.7s (空档4.7s)"></div><div class="timeline-gap" style="left:14.1%;width:84.6%" title="未覆盖: 19.7s ~ 138.1s (空档118.4s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:4.4%;width:10.7%" title="6.2s ~ 21.2s (持续15.0s)"></div><div class="timeline-band" style="left:90.4%;width:9.6%" title="126.5s ~ 139.9s (持续13.4s)"></div><div class="timeline-gap" style="left:0.0%;width:4.4%" title="未覆盖: 0.0s ~ 6.2s (空档6.2s)"></div><div class="timeline-gap" style="left:15.2%;width:75.2%" title="未覆盖: 21.2s ~ 126.5s (空档105.3s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 2</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="泰坦重铸服务器 - 受到伤害光环">泰坦重铸服务器 - 受到伤害光环</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">100.0%</span><br><span class="upt-b">100.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:0.0%;width:98.7%" title="0.0s ~ 138.1s (持续138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.0%;width:100.0%" title="0.0s ~ 139.9s (持续139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="熔岩护甲">熔岩护甲</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">100.0%</span><br><span class="upt-b">100.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:0.0%;width:98.7%" title="0.0s ~ 138.1s (持续138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.0%;width:100.0%" title="0.0s ~ 139.9s (持续139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="真言术：盾">真言术：盾</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">21.7%</span><br><span class="upt-b">0.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:23.6%;width:21.4%" title="33.1s ~ 63.1s (持续30.0s)"></div><div class="timeline-gap" style="left:0.0%;width:23.6%" title="未覆盖: 0.0s ~ 33.1s (空档33.1s)"></div><div class="timeline-gap" style="left:45.1%;width:53.6%" title="未覆盖: 63.1s ~ 138.1s (空档75.0s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:100.0%" title="未覆盖: 0.0s ~ 139.9s (空档139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 0</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="神圣守护者">神圣守护者</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">2.4%</span><br><span class="upt-b">8.6%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:70.4%;width:2.3%" title="98.6s ~ 101.9s (持续3.3s)"></div><div class="timeline-gap" style="left:0.0%;width:70.4%" title="未覆盖: 0.0s ~ 98.6s (空档98.6s)"></div><div class="timeline-gap" style="left:72.8%;width:25.9%" title="未覆盖: 101.9s ~ 138.1s (空档36.3s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:48.6%;width:4.3%" title="67.9s ~ 73.9s (持续6.0s)"></div><div class="timeline-band" style="left:73.8%;width:4.3%" title="103.3s ~ 109.3s (持续6.0s)"></div><div class="timeline-gap" style="left:0.0%;width:48.6%" title="未覆盖: 0.0s ~ 67.9s (空档67.9s)"></div><div class="timeline-gap" style="left:52.8%;width:21.0%" title="未覆盖: 73.9s ~ 103.3s (空档29.4s)"></div><div class="timeline-gap" style="left:78.1%;width:21.9%" title="未覆盖: 109.3s ~ 139.9s (空档30.6s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 2</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="神圣庇护">神圣庇护</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">8.7%</span><br><span class="upt-b">0.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:23.7%;width:8.6%" title="33.1s ~ 45.1s (持续12.0s)"></div><div class="timeline-gap" style="left:0.0%;width:23.7%" title="未覆盖: 0.0s ~ 33.1s (空档33.1s)"></div><div class="timeline-gap" style="left:32.2%;width:66.5%" title="未覆盖: 45.1s ~ 138.1s (空档93.0s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:100.0%" title="未覆盖: 0.0s ~ 139.9s (空档139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 0</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="神圣赞美诗">神圣赞美诗</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">0.0%</span><br><span class="upt-b">5.7%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:98.7%" title="未覆盖: 0.0s ~ 138.1s (空档138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:45.1%;width:5.7%" title="63.1s ~ 71.1s (持续8.0s)"></div><div class="timeline-gap" style="left:0.0%;width:45.1%" title="未覆盖: 0.0s ~ 63.1s (空档63.1s)"></div><div class="timeline-gap" style="left:50.8%;width:49.2%" title="未覆盖: 71.1s ~ 139.9s (空档68.8s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">0 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="节能施法">节能施法</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">4.7%</span><br><span class="upt-b">6.7%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:6.3%;width:1.5%" title="8.8s ~ 10.8s (持续2.0s)"></div><div class="timeline-band" style="left:20.7%;width:0.7%" title="29.0s ~ 30.0s (持续1.0s)"></div><div class="timeline-band" style="left:23.6%;width:0.3%" title="33.0s ~ 33.2s (持续0.2s)"></div><div class="timeline-band" style="left:24.4%;width:0.3%" title="34.1s ~ 34.3s (持续0.2s)"></div><div class="timeline-band" style="left:40.8%;width:0.5%" title="57.1s ~ 57.9s (持续0.7s)"></div><div class="timeline-band" style="left:66.2%;width:1.1%" title="92.6s ~ 94.1s (持续1.5s)"></div><div class="timeline-band" style="left:93.6%;width:0.5%" title="130.9s ~ 131.7s (持续0.7s)"></div><div class="timeline-gap" style="left:0.0%;width:6.3%" title="未覆盖: 0.0s ~ 8.8s (空档8.8s)"></div><div class="timeline-gap" style="left:7.7%;width:13.0%" title="未覆盖: 10.8s ~ 29.0s (空档18.1s)"></div><div class="timeline-gap" style="left:21.4%;width:2.1%" title="未覆盖: 30.0s ~ 33.0s (空档3.0s)"></div><div class="timeline-gap" style="left:23.7%;width:0.7%" title="未覆盖: 33.2s ~ 34.1s (空档1.0s)"></div><div class="timeline-gap" style="left:24.5%;width:16.3%" title="未覆盖: 34.3s ~ 57.1s (空档22.8s)"></div><div class="timeline-gap" style="left:41.3%;width:24.8%" title="未覆盖: 57.9s ~ 92.6s (空档34.7s)"></div><div class="timeline-gap" style="left:67.3%;width:26.3%" title="未覆盖: 94.1s ~ 130.9s (空档36.8s)"></div><div class="timeline-gap" style="left:94.1%;width:4.6%" title="未覆盖: 131.7s ~ 138.1s (空档6.4s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:12.6%;width:0.4%" title="17.6s ~ 18.1s (持续0.5s)"></div><div class="timeline-band" style="left:25.9%;width:1.3%" title="36.2s ~ 38.0s (持续1.8s)"></div><div class="timeline-band" style="left:49.4%;width:1.4%" title="69.2s ~ 71.2s (持续2.0s)"></div><div class="timeline-band" style="left:64.4%;width:1.8%" title="90.1s ~ 92.6s (持续2.5s)"></div><div class="timeline-band" style="left:68.0%;width:0.9%" title="95.2s ~ 96.5s (持续1.3s)"></div><div class="timeline-band" style="left:84.4%;width:0.8%" title="118.1s ~ 119.2s (持续1.1s)"></div><div class="timeline-gap" style="left:0.0%;width:12.6%" title="未覆盖: 0.0s ~ 17.6s (空档17.6s)"></div><div class="timeline-gap" style="left:13.0%;width:12.9%" title="未覆盖: 18.1s ~ 36.2s (空档18.1s)"></div><div class="timeline-gap" style="left:27.2%;width:22.3%" title="未覆盖: 38.0s ~ 69.2s (空档31.1s)"></div><div class="timeline-gap" style="left:50.9%;width:13.5%" title="未覆盖: 71.2s ~ 90.1s (空档18.9s)"></div><div class="timeline-gap" style="left:66.2%;width:1.8%" title="未覆盖: 92.6s ~ 95.2s (空档2.6s)"></div><div class="timeline-gap" style="left:69.0%;width:15.5%" title="未覆盖: 96.5s ~ 118.1s (空档21.6s)"></div><div class="timeline-gap" style="left:85.2%;width:14.8%" title="未覆盖: 119.2s ~ 139.9s (空档20.7s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">8 / 7</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="英勇">英勇</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">28.9%</span><br><span class="upt-b">28.5%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:2.2%;width:28.5%" title="3.0s ~ 43.0s (持续39.9s)"></div><div class="timeline-gap" style="left:0.0%;width:2.2%" title="未覆盖: 0.0s ~ 3.0s (空档3.0s)"></div><div class="timeline-gap" style="left:30.7%;width:68.0%" title="未覆盖: 43.0s ~ 138.1s (空档95.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:3.4%;width:28.5%" title="4.7s ~ 44.7s (持续39.9s)"></div><div class="timeline-gap" style="left:0.0%;width:3.4%" title="未覆盖: 0.0s ~ 4.7s (空档4.7s)"></div><div class="timeline-gap" style="left:31.9%;width:68.1%" title="未覆盖: 44.7s ~ 139.9s (空档95.2s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="虔诚光环">虔诚光环</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">98.0%</span><br><span class="upt-b">0.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:2.0%;width:96.7%" title="2.8s ~ 138.1s (持续135.3s)"></div><div class="timeline-gap" style="left:0.0%;width:2.0%" title="未覆盖: 0.0s ~ 2.8s (空档2.8s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:100.0%" title="未覆盖: 0.0s ~ 139.9s (空档139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 0</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="虚空之力">虚空之力</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">61.7%</span><br><span class="upt-b">0.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:11.2%;width:20.7%" title="15.6s ~ 44.6s (持续28.9s)"></div><div class="timeline-band" style="left:45.1%;width:20.3%" title="63.1s ~ 91.4s (持续28.3s)"></div><div class="timeline-band" style="left:78.8%;width:20.0%" title="110.2s ~ 138.1s (持续27.9s)"></div><div class="timeline-gap" style="left:0.0%;width:11.2%" title="未覆盖: 0.0s ~ 15.6s (空档15.6s)"></div><div class="timeline-gap" style="left:31.8%;width:13.2%" title="未覆盖: 44.6s ~ 63.1s (空档18.5s)"></div><div class="timeline-gap" style="left:65.3%;width:13.4%" title="未覆盖: 91.4s ~ 110.2s (空档18.8s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:100.0%" title="未覆盖: 0.0s ~ 139.9s (空档139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">11 / 0</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="血契">血契</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">0.0%</span><br><span class="upt-b">60.3%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:98.7%" title="未覆盖: 0.0s ~ 138.1s (空档138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:39.7%;width:60.3%" title="55.6s ~ 139.9s (持续84.3s)"></div><div class="timeline-gap" style="left:0.0%;width:39.7%" title="未覆盖: 0.0s ~ 55.6s (空档55.6s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">0 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="进食充分">进食充分</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">100.0%</span><br><span class="upt-b">100.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:0.0%;width:98.7%" title="0.0s ~ 138.1s (持续138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.0%;width:100.0%" title="0.0s ~ 139.9s (持续139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="野性赐福">野性赐福</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">100.0%</span><br><span class="upt-b">100.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:0.0%;width:98.7%" title="0.0s ~ 138.1s (持续138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.0%;width:100.0%" title="0.0s ~ 139.9s (持续139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="镜像">镜像</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">21.7%</span><br><span class="upt-b">21.4%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:3.9%;width:21.4%" title="5.4s ~ 35.4s (持续30.0s)"></div><div class="timeline-gap" style="left:0.0%;width:3.9%" title="未覆盖: 0.0s ~ 5.4s (空档5.4s)"></div><div class="timeline-gap" style="left:25.3%;width:73.4%" title="未覆盖: 35.4s ~ 138.1s (空档102.7s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:4.8%;width:21.4%" title="6.7s ~ 36.7s (持续30.0s)"></div><div class="timeline-gap" style="left:0.0%;width:4.8%" title="未覆盖: 0.0s ~ 6.7s (空档6.7s)"></div><div class="timeline-gap" style="left:26.2%;width:73.8%" title="未覆盖: 36.7s ~ 139.9s (空档103.2s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="闪现术">闪现术</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">0.0%</span><br><span class="upt-b">0.7%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:98.7%" title="未覆盖: 0.0s ~ 138.1s (空档138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.7%;width:0.7%" title="1.0s ~ 2.0s (持续1.0s)"></div><div class="timeline-gap" style="left:0.0%;width:0.7%" title="未覆盖: 0.0s ~ 1.0s (空档1.0s)"></div><div class="timeline-gap" style="left:1.4%;width:98.6%" title="未覆盖: 2.0s ~ 139.9s (空档138.0s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">0 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="龙魂图典">龙魂图典</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">100.0%</span><br><span class="upt-b">100.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:0.0%;width:98.7%" title="0.0s ~ 138.1s (持续138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.0%;width:100.0%" title="0.0s ~ 139.9s (持续139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">80 / 92</div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="aura-category">
+                        <h5>减益 (Debuffs)</h5>
+                        <div class="aura-legend">
+                            <span><span class="legend-dot legend-a"></span> {name_a}</span>
+                            <span><span class="legend-dot legend-b"></span> {name_b}</span>
+                        </div>
+                        <div class="aura-list">
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="光明精粹">光明精粹</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">0.0%</span><br><span class="upt-b">48.8%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:98.7%" title="未覆盖: 0.0s ~ 138.1s (空档138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:0.0%;width:48.8%" title="0.0s ~ 68.2s (持续68.2s)"></div><div class="timeline-gap" style="left:48.8%;width:51.2%" title="未覆盖: 68.2s ~ 139.9s (空档71.7s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">0 / 1</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="精疲力竭">精疲力竭</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">97.8%</span><br><span class="upt-b">96.7%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:2.1%;width:96.6%" title="3.0s ~ 138.1s (持续135.1s)"></div><div class="timeline-gap" style="left:0.0%;width:2.1%" title="未覆盖: 0.0s ~ 3.0s (空档3.0s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:3.3%;width:96.7%" title="4.6s ~ 139.9s (持续135.3s)"></div><div class="timeline-gap" style="left:0.0%;width:3.3%" title="未覆盖: 0.0s ~ 4.6s (空档4.6s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">2 / 2</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="能量强化">能量强化</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">0.0%</span><br><span class="upt-b">77.8%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:98.7%" title="未覆盖: 0.0s ~ 138.1s (空档138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:22.2%;width:8.5%" title="31.1s ~ 43.0s (持续11.9s)"></div><div class="timeline-band" style="left:30.7%;width:21.1%" title="43.0s ~ 72.5s (持续29.5s)"></div><div class="timeline-band" style="left:51.8%;width:48.2%" title="72.5s ~ 139.9s (持续67.4s)"></div><div class="timeline-gap" style="left:0.0%;width:22.2%" title="未覆盖: 0.0s ~ 31.1s (空档31.1s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">0 / 3</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="虚弱灵魂">虚弱灵魂</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">10.9%</span><br><span class="upt-b">0.0%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-band" style="left:23.7%;width:10.7%" title="33.1s ~ 48.1s (持续15.0s)"></div><div class="timeline-gap" style="left:0.0%;width:23.7%" title="未覆盖: 0.0s ~ 33.1s (空档33.1s)"></div><div class="timeline-gap" style="left:34.4%;width:64.3%" title="未覆盖: 48.1s ~ 138.1s (空档90.0s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:100.0%" title="未覆盖: 0.0s ~ 139.9s (空档139.9s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">1 / 0</div>
+                            </div>
+
+                            <div class="aura-row">
+                                <div class="aura-name" title="黑暗精粹">黑暗精粹</div>
+                                <div class="aura-uptime">
+                                    <span class="upt-a">0.0%</span><br><span class="upt-b">51.2%</span>
+                                </div>
+                                <div class="aura-timeline">
+                                    <div class="timeline-line line-a" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 98.7%, rgba(0,0,0,0.5) 98.7%);">
+                                        <div class="timeline-gap" style="left:0.0%;width:98.7%" title="未覆盖: 0.0s ~ 138.1s (空档138.1s)"></div><div class="timeline-end-marker" style="left:98.7%" title="冰蓝猫猫头 战斗结束: 138.1s"></div>
+                                    </div>
+                                    <div class="timeline-line line-b" style="background: linear-gradient(to right, rgba(0,0,0,0.25) 100.0%, rgba(0,0,0,0.5) 100.0%);">
+                                        <div class="timeline-band" style="left:48.8%;width:51.2%" title="68.2s ~ 139.9s (持续71.7s)"></div><div class="timeline-gap" style="left:0.0%;width:48.8%" title="未覆盖: 0.0s ~ 68.2s (空档68.2s)"></div>
+                                    </div>
+                                </div>
+                                <div class="aura-uses">0 / 2</div>
+                            </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>生成时间: 2026-06-12 16:07:18 | WCL Compare Tool</p>
+        </div>
+    </div>
+    <script>
+        function toggleAura(btn) {
+            const content = btn.nextElementSibling;
+            const icon = btn.querySelector('.toggle-icon');
+            content.classList.toggle('collapsed');
+            icon.textContent = content.classList.contains('collapsed') ? '▶' : '▼';
+        }
+    </script>
+</body>
+</html>

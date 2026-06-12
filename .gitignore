@@ -1,0 +1,10 @@
+.wcl_api_key
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+.DS_Store
+.vscode/
+.idea/
+demo_report.html

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCL 战斗记录对比分析</title>
+    <style>
+        :root {
+            --bg: #0d0d12;
+            --bg-card: #18181f;
+            --bg-table: #1f2330;
+            --text: #f8d466;
+            --text-light: #ece5d8;
+            --positive: #1eff00;
+            --negative: #ff2020;
+            --neutral: #9d9d9d;
+            --border: #5a4a2f;
+            --input-bg: #0a0a0f;
+            --gold: #f8d466;
+            --gold-dark: #8a6e2f;
+            --bronze: #5a4a2f;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(90, 74, 47, 0.25) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(90, 74, 47, 0.2) 0%, transparent 40%),
+                linear-gradient(180deg, #0d0d12 0%, #15151c 50%, #0d0d12 100%);
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        h1, h2, h3 {
+            font-family: 'Cinzel', 'Georgia', 'Times New Roman', 'Microsoft YaHei', 'PingFang SC', serif;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo h1 {
+            color: var(--gold);
+            font-size: 2.2em;
+            margin: 0;
+            text-shadow: 0 2px 8px rgba(248, 212, 102, 0.35), 0 0 2px rgba(0, 0, 0, 0.8);
+            letter-spacing: 1px;
+        }
+        .logo p {
+            color: var(--neutral);
+            margin: 8px 0 0;
+            font-size: 0.95em;
+        }
+        .card {
+            background:
+                linear-gradient(145deg, rgba(24, 24, 31, 0.95) 0%, rgba(18, 18, 24, 0.95) 100%);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+            border: 2px solid var(--border);
+            box-shadow:
+                inset 0 1px 0 rgba(248, 212, 102, 0.08),
+                0 8px 24px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 12px;
+            right: 12px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
+            opacity: 0.6;
+        }
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 12px;
+            right: 12px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
+            opacity: 0.3;
+        }
+        .card h3 {
+            margin: 0 0 16px;
+            color: var(--gold);
+            font-size: 1.15em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            border-bottom: 1px solid rgba(90, 74, 47, 0.6);
+            padding-bottom: 10px;
+        }
+        .fight-label {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            text-align: center;
+            line-height: 28px;
+            font-size: 0.85em;
+            font-weight: bold;
+            border: 1px solid var(--gold-dark);
+            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        .fight-a { background: linear-gradient(145deg, #1a3a5c 0%, #0f2238 100%); color: #6ac0ff; }
+        .fight-b { background: linear-gradient(145deg, #5c1a1a 0%, #380f0f 100%); color: #ff8080; }
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .input-group input {
+            flex: 1;
+            padding: 10px 14px;
+            background: linear-gradient(180deg, #0f0f14 0%, #15151c 100%);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-light);
+            font-size: 0.95em;
+            outline: none;
+            transition: all 0.2s;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .input-group input:focus {
+            border-color: var(--gold);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 8px rgba(248, 212, 102, 0.25);
+        }
+        .input-group input::placeholder {
+            color: #6a6a6a;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 3px;
+            background: rgba(90, 74, 47, 0.3);
+            border-radius: 2px;
+            margin-top: 6px;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .progress-bar.show { opacity: 1; }
+        .progress-bar .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--gold-dark) 0%, var(--gold) 100%);
+            box-shadow: 0 0 8px rgba(248, 212, 102, 0.5);
+            transition: width 0.3s ease;
+        }
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--gold-dark);
+            border-radius: 6px;
+            background: linear-gradient(180deg, #2a2520 0%, #1a1714 100%);
+            color: var(--gold);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+        .btn-icon:hover {
+            background: linear-gradient(180deg, #3a3328 0%, #2a2318 100%);
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(248, 212, 102, 0.25);
+        }
+        .btn-icon:disabled { opacity: 0.4; cursor: not-allowed; border-color: var(--border); }
+        .fight-info {
+            font-size: 0.85em;
+            color: var(--neutral);
+            margin-top: 4px;
+            min-height: 20px;
+        }
+        .fight-info.ok { color: var(--positive); }
+        .fight-info.error { color: var(--negative); }
+        .select-group {
+            margin-top: 16px;
+        }
+        .select-group label {
+            display: block;
+            font-size: 0.85em;
+            color: var(--neutral);
+            margin-bottom: 6px;
+        }
+        .select-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: linear-gradient(180deg, #0f0f14 0%, #15151c 100%);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-light);
+            font-size: 0.95em;
+            outline: none;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .select-group select:focus {
+            border-color: var(--gold);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 8px rgba(248, 212, 102, 0.2);
+        }
+        .select-group select:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .select-group select option {
+            background: #18181f;
+        }
+        .actions {
+            margin-top: 24px;
+            text-align: center;
+        }
+        .btn-primary {
+            padding: 12px 42px;
+            background: linear-gradient(180deg, #b8860b 0%, #6b4e12 100%);
+            color: #1a0f00;
+            border: 2px solid #f8d466;
+            border-radius: 6px;
+            font-size: 1.05em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.25),
+                0 4px 12px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(0, 0, 0, 0.8);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(180deg, #d4a017 0%, #8a6e2f 100%);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                0 0 16px rgba(248, 212, 102, 0.4),
+                0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(0.6);
+        }
+        .error-msg {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: rgba(90, 20, 20, 0.25);
+            border: 1px solid rgba(255, 50, 50, 0.4);
+            border-radius: 6px;
+            color: #ff9999;
+            font-size: 0.9em;
+            white-space: pre-line;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 16px;
+            color: var(--neutral);
+        }
+        .loading.show { display: block; }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+            box-shadow: 0 0 6px rgba(248, 212, 102, 0.3);
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .divider {
+            text-align: center;
+            color: var(--gold-dark);
+            margin: 8px 0;
+            font-size: 0.85em;
+            letter-spacing: 2px;
+        }
+        .tip {
+            font-size: 0.8em;
+            color: var(--neutral);
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>⚔️ WCL 战斗记录对比分析</h1>
+            <p>输入两次战斗日志地址，选择 Boss 战和角色，一键生成对比报告</p>
+        </div>
+
+        <div class="card">
+            <h3><span class="fight-label fight-a">A</span> 第一次战斗</h3>
+            <div class="input-group">
+                <input type="text" id="urlA" placeholder="粘贴 WCL 战斗日志地址，例如 https://cn.titan.warcraftlogs.com/reports/XXXX">
+                <button class="btn-icon" id="btnA" onclick="queryFights('A')" title="查询战斗列表">
+                    🔍
+                </button>
+            </div>
+            <div class="progress-bar" id="progressA"><div class="progress-fill"></div></div>
+            <div class="fight-info" id="infoA"></div>
+            <div class="select-group">
+                <label>选择 Boss 战</label>
+                <select id="fightA" disabled onchange="onFightChange('A')">
+                    <option value="">请先输入地址并点击 🔍</option>
+                </select>
+            </div>
+            <div class="select-group">
+                <label>选择角色</label>
+                <select id="selectA" disabled onchange="checkReady()">
+                    <option value="">请先选择 Boss 战</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="divider">▼</div>
+
+        <div class="card">
+            <h3><span class="fight-label fight-b">B</span> 第二次战斗</h3>
+            <div class="input-group">
+                <input type="text" id="urlB" placeholder="粘贴 WCL 战斗日志地址，例如 https://cn.titan.warcraftlogs.com/reports/XXXX">
+                <button class="btn-icon" id="btnB" onclick="queryFights('B')" title="查询战斗列表">
+                    🔍
+                </button>
+            </div>
+            <div class="progress-bar" id="progressB"><div class="progress-fill"></div></div>
+            <div class="fight-info" id="infoB"></div>
+            <div class="select-group">
+                <label>选择 Boss 战</label>
+                <select id="fightB" disabled onchange="onFightChange('B')">
+                    <option value="">请先输入地址并点击 🔍</option>
+                </select>
+            </div>
+            <div class="select-group">
+                <label>选择角色</label>
+                <select id="selectB" disabled onchange="checkReady()">
+                    <option value="">请先选择 Boss 战</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn-primary" id="btnAnalyze" onclick="startAnalyze()" disabled>
+                开始分析
+            </button>
+        </div>
+        <div class="tip" style="text-align:center;">
+            提示：如果两次战斗不是同一个 Boss，报告顶部会给出对比参考性提示。
+        </div>
+
+        <div class="loading" id="loading">
+            <span class="spinner"></span>正在分析中，请稍候...
+        </div>
+
+        <div id="errorBox"></div>
+    </div>
+
+    <script>
+        const state = {
+            A: { report: null, fights: [], fight: null, players: [], fightPlayers: {} },
+            B: { report: null, fights: [], fight: null, players: [], fightPlayers: {} },
+        };
+
+        function setError(msg) {
+            const box = document.getElementById('errorBox');
+            if (msg) {
+                box.innerHTML = '<div class="error-msg">' + escapeHtml(msg) + '</div>';
+            } else {
+                box.innerHTML = '';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function setLoading(show) {
+            document.getElementById('loading').classList.toggle('show', show);
+        }
+
+        function difficultyName(diff) {
+            const map = {1: '随机', 3: '普通', 4: '英雄', 5: '史诗'};
+            return map[diff] || ('难度' + diff);
+        }
+
+        function setProgress(side, percent) {
+            const bar = document.getElementById('progress' + side);
+            const fill = bar.querySelector('.progress-fill');
+            if (percent > 0) {
+                bar.classList.add('show');
+                fill.style.width = percent + '%';
+            } else {
+                bar.classList.remove('show');
+                fill.style.width = '0%';
+            }
+        }
+
+        // 自动查询：粘贴 URL 后 600ms 自动触发
+        let debounceTimers = {};
+        ['A', 'B'].forEach(side => {
+            document.getElementById('url' + side).addEventListener('input', () => {
+                clearTimeout(debounceTimers[side]);
+                debounceTimers[side] = setTimeout(() => queryFights(side), 600);
+            });
+        });
+
+        async function queryFights(side) {
+            setError('');
+            const url = document.getElementById('url' + side).value.trim();
+            const info = document.getElementById('info' + side);
+            const btn = document.getElementById('btn' + side);
+            const fightSelect = document.getElementById('fight' + side);
+            const playerSelect = document.getElementById('select' + side);
+
+            if (!url) {
+                info.textContent = '请输入 WCL 地址';
+                info.className = 'fight-info error';
+                return;
+            }
+
+            btn.disabled = true;
+            setProgress(side, 5);
+            info.textContent = '正在解析地址...';
+            info.className = 'fight-info';
+            fightSelect.disabled = true;
+            playerSelect.disabled = true;
+            fightSelect.innerHTML = '<option value="">加载中...</option>';
+            playerSelect.innerHTML = '<option value="">请选择角色</option>';
+
+            try {
+                // 1. 解析URL
+                const parseRes = await fetch('/api/parse-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                }).then(r => r.json());
+
+                if (!parseRes.success) {
+                    info.textContent = parseRes.error;
+                    info.className = 'fight-info error';
+                    setProgress(side, 0);
+                    btn.disabled = false;
+                    fightSelect.innerHTML = '<option value="">请先输入地址并点击 🔍</option>';
+                    return;
+                }
+
+                state[side].report = parseRes.report_code;
+                state[side].fights = [];
+                state[side].fightPlayers = {};
+                setProgress(side, 15);
+                info.textContent = 'Report: ' + parseRes.report_code + ' — 正在查询战斗列表...';
+
+                // 2. 查询战斗列表
+                const fightsRes = await fetch('/api/fights', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ report_code: parseRes.report_code })
+                }).then(r => r.json());
+
+                if (!fightsRes.success) {
+                    info.textContent = fightsRes.error;
+                    info.className = 'fight-info error';
+                    setProgress(side, 0);
+                    btn.disabled = false;
+                    fightSelect.innerHTML = '<option value="">请先输入地址并点击 🔍</option>';
+                    return;
+                }
+
+                state[side].fights = fightsRes.fights;
+
+                // 填充战斗下拉框（角色还在加载，先可选战斗）
+                fightSelect.innerHTML = '<option value="">请选择 Boss 战</option>';
+                fightsRes.fights.forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.id;
+                    const kill = f.kill ? '✓ 击杀' : '✗ 未击杀';
+                    const name = f.name_cn || f.name;
+                    opt.textContent = `${name} (${kill}, ${f.duration.toFixed(0)}s, ${difficultyName(f.difficulty)})`;
+                    fightSelect.appendChild(opt);
+                });
+                fightSelect.disabled = false;
+
+                // 3. 并行加载所有战斗的角色列表
+                const total = fightsRes.fights.length;
+                if (total === 0) {
+                    info.textContent = '该报告没有 Boss 战';
+                    info.className = 'fight-info error';
+                    setProgress(side, 0);
+                    btn.disabled = false;
+                    return;
+                }
+
+                let completed = 0;
+                info.textContent = `找到 ${total} 场战斗，正在并行加载角色...`;
+
+                const playerPromises = fightsRes.fights.map(f =>
+                    fetch('/api/players', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            report_code: state[side].report,
+                            fight_id: f.id
+                        })
+                    }).then(r => r.json()).then(res => {
+                        completed++;
+                        state[side].fightPlayers[f.id] = res.success ? res : { success: false, players: [], error: res.error };
+                        const percent = 20 + Math.round((completed / total) * 75);
+                        setProgress(side, percent);
+                        info.textContent = `正在加载角色... (${completed}/${total})`;
+                        // 如果当前选中的战斗刚好加载完成，自动刷新角色列表
+                        if (parseInt(fightSelect.value) === f.id) {
+                            onFightChange(side);
+                        }
+                        return res;
+                    })
+                );
+
+                await Promise.all(playerPromises);
+                setProgress(side, 100);
+                setTimeout(() => setProgress(side, 0), 400);
+
+                info.innerHTML = '✅ 找到 ' + fightsRes.fights.length + ' 场战斗，角色已加载完毕';
+                info.className = 'fight-info ok';
+
+                // 如果 URL 里带了 fight=NN，自动选中
+                if (parseRes.fight_id) {
+                    const auto = fightsRes.fights.find(f => f.id === parseRes.fight_id);
+                    if (auto) {
+                        fightSelect.value = auto.id;
+                        onFightChange(side);
+                    }
+                }
+            } catch (e) {
+                info.textContent = '请求失败: ' + e.message;
+                info.className = 'fight-info error';
+                setProgress(side, 0);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function onFightChange(side) {
+            setError('');
+            const fightSelect = document.getElementById('fight' + side);
+            const playerSelect = document.getElementById('select' + side);
+            const info = document.getElementById('info' + side);
+            const fightId = parseInt(fightSelect.value);
+
+            playerSelect.innerHTML = '<option value="">请选择角色</option>';
+            playerSelect.disabled = true;
+            state[side].fight = null;
+            state[side].players = [];
+            checkReady();
+
+            if (!fightId) return;
+
+            const cached = state[side].fightPlayers[fightId];
+            if (!cached || !cached.success) {
+                info.textContent = (cached && cached.error) ? cached.error : '该战斗暂无角色数据';
+                info.className = 'fight-info error';
+                return;
+            }
+
+            state[side].fight = fightId;
+            state[side].players = cached.players;
+
+            playerSelect.innerHTML = '<option value="">请选择角色</option>';
+            cached.players.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.name;
+                opt.textContent = p.name + ' (' + p.spec_cn + ')' + ' — ilvl ' + p.ilvl.toFixed(1) + ' — DPS ' + Math.round(p.dps);
+                playerSelect.appendChild(opt);
+            });
+            playerSelect.disabled = false;
+
+            info.innerHTML = '✅ ' + escapeHtml(cached.fight_name_cn || cached.fight_name) + ' — 找到 ' + cached.players.length + ' 个角色';
+            info.className = 'fight-info ok';
+
+            checkReady();
+        }
+
+        function checkReady() {
+            const selA = document.getElementById('selectA').value;
+            const selB = document.getElementById('selectB').value;
+            const btn = document.getElementById('btnAnalyze');
+            btn.disabled = !(selA && selB);
+        }
+
+        async function startAnalyze() {
+            setError('');
+            setLoading(true);
+            const btn = document.getElementById('btnAnalyze');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        report_a: state.A.report,
+                        fight_a: state.A.fight,
+                        report_b: state.B.report,
+                        fight_b: state.B.fight,
+                        player_a: document.getElementById('selectA').value,
+                        player_b: document.getElementById('selectB').value,
+                    })
+                }).then(r => r.json());
+
+                if (!res.success) {
+                    setError(res.error);
+                    btn.disabled = false;
+                    return;
+                }
+
+                // 打开报告
+                window.open('/reports/' + res.report_file, '_blank');
+            } catch (e) {
+                setError('分析失败: ' + e.message);
+            } finally {
+                setLoading(false);
+                checkReady();
+            }
+        }
+    </script>
+</body>
+</html>
