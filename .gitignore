@@ -7,4 +7,6 @@ __pycache__/
 .DS_Store
 .vscode/
 .idea/
-demo_report.html
+
+# 生成的报告文件
+reports/

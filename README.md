@@ -58,9 +58,11 @@ cd wcl_compare
 # 对比两次战斗（锁定玩家）
 "C:\Program Files\Python312\python.exe" main.py ABC123 1 DEF456 2 --player "玩家名字"
 
-# 生成 HTML 可视化报告
-"C:\Program Files\Python312\python.exe" main.py ABC123 1 DEF456 2 --player "玩家名字" -o report.html
+# 生成 HTML 可视化报告（保存到 reports/ 目录）
+"C:\Program Files\Python312\python.exe" main.py ABC123 1 DEF456 2 --player "玩家名字" -o reports/report.html
 ```
+
+> **报告文件存放位置**：网页版、交互式运行和演示脚本生成的 HTML 报告会自动保存到 `reports/` 目录，文件名包含时间戳（如 `report_20260612_101144_abc123.html`），避免重复覆盖。
 
 ## 输入格式
 

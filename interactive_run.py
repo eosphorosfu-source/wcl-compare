@@ -9,6 +9,8 @@ import sys
 import subprocess
 import re
 
+from report_generator import get_report_path
+
 
 def get_saved_key():
     """读取已保存的API Key"""
@@ -144,6 +146,14 @@ def main():
         input("按回车退出...")
         return
 
+    # 生成带时间戳的报告路径
+    report_path = get_report_path(
+        prefix="report",
+        suffix=".html",
+        project_root=os.path.dirname(os.path.abspath(__file__)),
+        include_random=False,
+    )
+
     # 构建命令
     python = r"C:\Program Files\Python312\python.exe"
     main_script = os.path.join(os.path.dirname(__file__), "main.py")
@@ -152,7 +162,7 @@ def main():
         python, main_script,
         "--api-key", api_key,
         "--player", target,
-        "--output", "report.html",
+        "--output", report_path,
         report_a, fight_a,
         report_b, fight_b
     ]
@@ -176,7 +186,6 @@ def main():
         if result.returncode == 0:
             print()
             print("对比完成!")
-            report_path = os.path.join(os.path.dirname(__file__), "report.html")
             if os.path.exists(report_path):
                 print(f"HTML 报告已生成: {report_path}")
                 try:

@@ -2,9 +2,37 @@
 对比报告生成器 - 支持文本和HTML两种格式
 """
 import json
+import os
+import uuid
 from typing import Dict, List
 from datetime import datetime
 from analyzer import translate_name
+
+
+def get_reports_dir(project_root: str = None) -> str:
+    """获取报告输出目录，不存在则自动创建"""
+    if project_root is None:
+        project_root = os.path.dirname(os.path.abspath(__file__))
+    reports_dir = os.path.join(project_root, "reports")
+    os.makedirs(reports_dir, exist_ok=True)
+    return reports_dir
+
+
+def generate_report_filename(prefix: str = "report", suffix: str = ".html", include_random: bool = True) -> str:
+    """生成带时间戳的报告文件名，可选随机后缀避免并发冲突"""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    if include_random:
+        random_part = uuid.uuid4().hex[:6]
+        return f"{prefix}_{timestamp}_{random_part}{suffix}"
+    return f"{prefix}_{timestamp}{suffix}"
+
+
+def get_report_path(prefix: str = "report", suffix: str = ".html", project_root: str = None,
+                    include_random: bool = True) -> str:
+    """生成带时间戳的报告文件完整路径"""
+    reports_dir = get_reports_dir(project_root)
+    filename = generate_report_filename(prefix, suffix, include_random)
+    return os.path.join(reports_dir, filename)
 
 
 # 增益/减益时间轴全局 WoW 风格配色（不随职业变化，确保同职业对比也能看清）

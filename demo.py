@@ -3,8 +3,10 @@
 演示脚本 - 使用模拟数据展示对比报告效果
 无需 WCL API Key 即可预览
 """
+import os
+
 from analyzer import FightComparator, PlayerCompareData
-from report_generator import TextReportGenerator, HtmlReportGenerator
+from report_generator import TextReportGenerator, HtmlReportGenerator, get_report_path
 
 
 def create_mock_comparison():
@@ -235,14 +237,19 @@ def main():
     html_gen = HtmlReportGenerator()
     html_report = html_gen.generate(comparison, mock)
     
-    output_file = "demo_report.html"
+    output_file = get_report_path(
+        prefix="demo_report",
+        suffix=".html",
+        project_root=os.path.dirname(os.path.abspath(__file__)),
+        include_random=False,
+    )
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(html_report)
-    
+
     print()
     print(f"✅ HTML 演示报告已保存: {output_file}")
     print()
-    print("提示: 用浏览器打开 demo_report.html 查看可视化报告")
+    print(f"提示: 用浏览器打开 {output_file} 查看可视化报告")
     print()
     print("实际使用 WCL 数据:")
     print('  python main.py <report_a> <fight_a> <report_b> <fight_b> --player "玩家名字"')

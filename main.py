@@ -7,7 +7,7 @@ WCL 战斗记录对比分析工具 (v2 GraphQL API)
 
 示例:
     python main.py ABC123 1 DEF456 2 --player "张三"
-    python main.py ABC123 1 DEF456 2 --player "张三" -o report.html
+    python main.py ABC123 1 DEF456 2 --player "张三" -o reports/report.html
     python main.py --list-fights ABC123
 """
 import argparse
@@ -107,7 +107,7 @@ def main():
         parser.print_help()
         print("\n示例:")
         print('  python main.py ABC123 1 DEF456 2 --player "张三"')
-        print('  python main.py ABC123 1 DEF456 2 --player "张三" -o report.html')
+        print('  python main.py ABC123 1 DEF456 2 --player "张三" -o reports/report.html')
         print('  python main.py --list-fights ABC123')
         sys.exit(1)
 

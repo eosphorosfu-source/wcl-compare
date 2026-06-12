@@ -6,16 +6,18 @@ WCL 对比分析工具 - Web 入口
 import os
 import re
 import sys
-import tempfile
 from urllib.parse import urlparse, parse_qs
 
 from flask import Flask, jsonify, render_template, request, send_from_directory
 
 from wcl_client import WCLClient
 from analyzer import FightComparator, PlayerCompareData, translate_name
-from report_generator import HtmlReportGenerator
+from report_generator import HtmlReportGenerator, get_reports_dir, generate_report_filename
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+
+# 报告文件输出目录
+REPORTS_DIR = get_reports_dir(os.path.dirname(os.path.abspath(__file__)))
 
 
 def get_api_key() -> str:
@@ -276,13 +278,13 @@ def api_analyze():
         generator = HtmlReportGenerator()
         html = generator.generate(comparison, comparator)
 
-        # 保存到临时文件并返回
-        with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False, encoding="utf-8", dir=os.path.dirname(__file__)) as f:
+        # 保存报告文件到 reports 目录，文件名带时间戳
+        report_filename = generate_report_filename(prefix="report", suffix=".html", include_random=True)
+        report_path = os.path.join(REPORTS_DIR, report_filename)
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(html)
-            report_path = f.name
 
-        filename = os.path.basename(report_path)
-        return jsonify({"success": True, "report_file": filename})
+        return jsonify({"success": True, "report_file": report_filename})
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -292,8 +294,7 @@ def api_analyze():
 @app.route("/reports/<path:filename>")
 def serve_report(filename):
     safe_name = os.path.basename(filename)
-    report_dir = os.path.dirname(__file__)
-    return send_from_directory(report_dir, safe_name)
+    return send_from_directory(REPORTS_DIR, safe_name)
 
 
 if __name__ == "__main__":
