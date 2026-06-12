@@ -5,6 +5,46 @@
 
 ---
 
+## 〇、继续迭代指引（必读）
+
+### 如何唤醒本项目
+
+由于 AI 助手无法永久保留会话上下文，下次继续迭代本项目时，请按以下步骤操作：
+
+1. **打开新的 Kimi / AI 会话**
+2. **直接发送指令**：
+   > 继续迭代 wcl_compare 项目，项目历史文档在 PROJECT_HISTORY.md，先读取它。
+3. **AI 会读取本文档**，从而恢复对项目背景、架构、部署状态和后续建议的完整理解。
+
+### 如果项目路径或环境发生变化
+
+请将以下信息一次性提供给 AI：
+
+- 项目本地路径（例如：`D:/AI/wcl_compare`）
+- GitHub 仓库地址：`https://github.com/eosphorosfu-source/wcl-compare`
+- 当前想实现的目标或遇到的问题
+
+**示例**：
+> 项目路径是 D:\AI\wcl_compare，GitHub 地址 https://github.com/eosphorosfu-source/wcl-compare，我现在想给网站加用户登录功能。请先读 PROJECT_HISTORY.md。
+
+### 关于 Kimi CLI 会话恢复
+
+- 如果在同一台电脑上使用 Kimi CLI，可尝试 `kimi resume` 恢复之前的会话。
+- 但最稳妥的方式仍然是：**新会话 + 让 AI 读取 PROJECT_HISTORY.md**。
+
+### 本文档的作用
+
+**PROJECT_HISTORY.md 是本项目的“记忆备份”**。只要将其提供给 AI，即可快速恢复：
+
+- 项目背景与用途
+- 已完成的所有迭代
+- 最终完整需求
+- 当前技术架构与部署方式
+- 已知问题与限制
+- 后续迭代建议清单
+
+---
+
 ## 一、项目概述
 
 **项目名称**：WCL 战斗记录对比分析工具
